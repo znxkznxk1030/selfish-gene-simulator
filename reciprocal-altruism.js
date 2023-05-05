@@ -18,8 +18,6 @@ const mouse = {
 
 const colors = ["#2185C5", "#FFF6E5", "#FF7F66"];
 
-const types = ["#2185C5", "#7ECEFD", "#FFF6E5"];
-
 // Event Listeners
 addEventListener("mousemove", (event) => {
   mouse.x = event.clientX;
@@ -33,19 +31,44 @@ addEventListener("resize", () => {
   init();
 });
 
+let increment = 0
+
 // Bird
 class Bird {
-  constructor(x, y, radius) {
-    this.x = x;
-    this.y = y;
+  constructor() {
+    this.id = increment++;
+    this.x = 0
+    this.y = 0
     this.velocity = {
-      x: (Math.random() - 0.5) * 0.07,
-      y: (Math.random() - 0.5) * 0.07,
+      x: (Math.random() - 0.5) * 5,
+      y: (Math.random() - 0.5) * 5,
     };
-    this.radius = radius;
-    this.color = "#2185C5";
+    this.radius = 15;
+    this.color = "#000";
     this.mass = 0.5;
     this.opacity = 1;
+    this.vital = 100;
+    this.type = Bird
+    this.hasMite = false
+  }
+
+  create(particles) {
+    const radius = this.radius
+    this.x = randomIntFromRange(radius, innerWidth - radius);
+    this.y = randomIntFromRange(radius, innerHeight - radius);
+
+    for (let j = 0; j < particles.length; j++) {
+      const particle = particles[j];
+
+      if (distance(this.x, this.y, particle.x, particle.y) < radius * 2) {
+        this.x = randomIntFromRange(radius, innerWidth - radius);
+        this.y = randomIntFromRange(radius, innerHeight - radius);
+
+        j = -1;
+      }
+    }
+
+    particles.push(this);
   }
 
   draw() {
@@ -59,9 +82,22 @@ class Bird {
     c.strokeStyle = this.color;
     c.stroke();
     c.closePath();
+
+    if (this.hasMite) {
+      c.beginPath();
+      c.arc(this.x + 2, this.y + 2, this.radius / 2, 0, Math.PI * 2, false);
+      c.save();
+      c.globalAlpha = this.opacity;
+      c.fillStyle = '#000';
+      c.fill();
+      c.restore();
+      c.strokeStyle = '#000';
+      c.stroke();
+      c.closePath();
+    }
   }
 
-  update(particles) {
+  update(particles, removals) {
     this.draw();
 
     particles.forEach((particle) => {
@@ -78,35 +114,52 @@ class Bird {
       if (this.y - this.radius <= 0 || this.y + this.radius >= innerHeight) {
         this.velocity.y *= -1;
       }
-
-
-      this.x += this.velocity.x;
-      this.y += this.velocity.y;
     });
+
+    this.x += this.velocity.x;
+    this.y += this.velocity.y;
+
+    if (this.hasMite == false ){
+      this.hasMite = randomIntFromRange(0, 1000) > 1? false: true;
+    }
+
+    this.vital += this.hasMite? -5: 1
+    console.log(this.vital)
+
+
+    if (this.vital >= 500) {
+      this.vital = 100
+      const newBird = new this.type()
+      newBird.create(particles)
+      console.log("create event")
+    } else if (this.vital <= 0) {
+      removals.push(this)
+    }
   }
 }
 
 class Sucker extends Bird {
-  constructor(x, y, radius) {
-    super(x, y, radius)
+  constructor() {
+    super()
     this.color = "#2185C5"
+    this.type = Sucker
   }
 }
 
 class Cheater extends Bird  {
-  constructor(x, y, radius) {
-    super(x, y, radius)
+  constructor() {
+    super()
     this.color = "#FFF6E5"
+    this.type = Cheater
   }
-  
 }
 
 class Grudger extends Bird  {
-  constructor(x, y, radius) {
-    super(x, y, radius)
+  constructor() {
+    super()
     this.color = "#FF7F66"
+    this.type = Grudger
   }
-
 }
 
 const birdTypes = [ Sucker, Cheater, Grudger ]
@@ -116,37 +169,36 @@ const birdTypes = [ Sucker, Cheater, Grudger ]
 let particles;
 function init() {
   particles = [];
-  const radius = 15
-  for (let i = 0; i < 150; i++) {
-    let x = randomIntFromRange(radius, innerWidth - radius);
-    let y = randomIntFromRange(radius, innerHeight - radius);
+  for (let i = 0; i < 10; i++) {
+    const bird = new Sucker()
+    bird.create(particles)
+  }
 
-    if (i !== 0) {
-      for (let j = 0; j < particles.length; j++) {
-        const particle = particles[j];
+  for (let i = 0; i < 10; i++) {
+    const bird = new Cheater()
+    bird.create(particles)
+  }
 
-        if (distance(x, y, particle.x, particle.y) < radius * 2) {
-          x = randomIntFromRange(radius, innerWidth - radius);
-          y = randomIntFromRange(radius, innerHeight - radius);
-
-          j = -1;
-        }
-      }
-    }
-
-    const BirdType = randomType(birdTypes)
-    particles.push(new BirdType(x, y, radius));
+  for (let i = 0; i < 10; i++) {
+    const bird = new Grudger()
+    bird.create(particles)
   }
 }
 
 // Animation Loop
 function animate() {
-  requestAnimationFrame(animate);
+  setTimeout(() => {
+    requestAnimationFrame(animate);
+  }, 5);
   c.clearRect(0, 0, canvas.width, canvas.height);
 
+  let removals = []
   particles.forEach((particle) => {
-    particle.update(particles);
+    particle.update(particles, removals);
   });
+
+  console.log(removals)
+  particles = particles.filter(bird => removals.findIndex(_bird => bird.id === _bird.id))
 }
 
 init();
