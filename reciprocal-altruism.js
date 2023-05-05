@@ -47,7 +47,7 @@ class Bird {
     this.color = "#000";
     this.mass = 0.5;
     this.opacity = 1;
-    this.vital = 100;
+    this.vital = 50;
     this.type = Bird
     this.hasMite = false
   }
@@ -85,7 +85,7 @@ class Bird {
 
     if (this.hasMite) {
       c.beginPath();
-      c.arc(this.x + 2, this.y + 2, this.radius / 2, 0, Math.PI * 2, false);
+      c.arc(this.x + 1, this.y + 1, this.radius / 3, 0, Math.PI * 2, false);
       c.save();
       c.globalAlpha = this.opacity;
       c.fillStyle = '#000';
@@ -120,15 +120,15 @@ class Bird {
     this.y += this.velocity.y;
 
     if (this.hasMite == false ){
-      this.hasMite = randomIntFromRange(0, 1000) > 1? false: true;
+      this.hasMite = randomIntFromRange(0, 1000) > 3? false: true;
     }
 
-    this.vital += this.hasMite? -5: 1
+    this.vital += this.hasMite? -1: 1
     console.log(this.vital)
 
 
-    if (this.vital >= 500) {
-      this.vital = 100
+    if (this.vital >= 300) {
+      this.vital = 50
       const newBird = new this.type()
       newBird.create(particles)
       console.log("create event")
