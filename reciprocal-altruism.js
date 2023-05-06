@@ -40,14 +40,14 @@ class Bird {
     this.x = 0
     this.y = 0
     this.velocity = {
-      x: (Math.random() - 0.5) * 5,
-      y: (Math.random() - 0.5) * 5,
+      x: (Math.random() - 0.2) * 12,
+      y: (Math.random() - 0.2) * 12,
     };
     this.radius = 15;
     this.color = "#000";
     this.mass = 0.5;
     this.opacity = 1;
-    this.vital = 50;
+    this.vital = 100;
     this.type = Bird
     this.hasMite = false
   }
@@ -120,15 +120,15 @@ class Bird {
     this.y += this.velocity.y;
 
     if (this.hasMite == false ){
-      this.hasMite = randomIntFromRange(0, 1000) > 3? false: true;
+      this.hasMite = randomIntFromRange(0, 1000) > 5? false: true;
     }
 
-    this.vital += this.hasMite? -1: 1
+    this.vital += this.hasMite? -2: 1
     console.log(this.vital)
 
 
     if (this.vital >= 300) {
-      this.vital = 50
+      this.vital = 100
       const newBird = new this.type()
       newBird.create(particles)
       console.log("create event")
@@ -144,21 +144,60 @@ class Sucker extends Bird {
     this.color = "#2185C5"
     this.type = Sucker
   }
+
+  update(particles, removals) {
+    super.update(particles, removals)
+
+    particles.forEach((otherBird) => {
+      if (this === otherBird) return;
+
+      if (distance(this.x, this.y, otherBird.x, otherBird.y) < this.radius * 2) {
+        if (otherBird.hasMite) {
+          otherBird.hasMite = false
+          this.vital -= 20
+        }
+      }
+    });
+  }
 }
 
 class Cheater extends Bird  {
   constructor() {
     super()
-    this.color = "#FFF6E5"
+    this.color = "#FF7F66"
     this.type = Cheater
+  }
+
+  update(particles, removals) {
+    super.update(particles, removals)
   }
 }
 
 class Grudger extends Bird  {
   constructor() {
     super()
-    this.color = "#FF7F66"
+    this.color = "#008D62"
     this.type = Grudger
+    this.blacklist = new Set()
+  }
+
+  update(particles, removals) {
+    super.update(particles, removals)
+
+    particles.forEach((otherBird) => {
+      if (this === otherBird) return;
+
+      if (distance(this.x, this.y, otherBird.x, otherBird.y) < this.radius * 2) {
+        if (this.hasMite && otherBird instanceof Cheater) {
+          this.blacklist.add(otherBird.id)
+        }
+
+        if (otherBird.hasMite && !this.blacklist.has(otherBird.id)) {
+          otherBird.hasMite = false
+          this.vital -= 20
+        }
+      }
+    });
   }
 }
 
@@ -169,17 +208,17 @@ const birdTypes = [ Sucker, Cheater, Grudger ]
 let particles;
 function init() {
   particles = [];
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 15; i++) {
     const bird = new Sucker()
     bird.create(particles)
   }
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 15; i++) {
     const bird = new Cheater()
     bird.create(particles)
   }
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 15; i++) {
     const bird = new Grudger()
     bird.create(particles)
   }
