@@ -123,7 +123,7 @@ class Bird {
       this.hasMite = randomIntFromRange(0, 1000) > 5? false: true;
     }
 
-    this.vital += this.hasMite? -2: 1
+    this.vital += this.hasMite? -1: 1
     console.log(this.vital)
 
 
@@ -192,7 +192,7 @@ class Grudger extends Bird  {
           this.blacklist.add(otherBird.id)
         }
 
-        if (otherBird.hasMite && !this.blacklist.has(otherBird.id)) {
+        if (otherBird.hasMite && !(otherBird instanceof Cheater)){//!this.blacklist.has(otherBird.id)) {
           otherBird.hasMite = false
           this.vital -= 20
         }
@@ -208,17 +208,17 @@ const birdTypes = [ Sucker, Cheater, Grudger ]
 let particles;
 function init() {
   particles = [];
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < 9; i++) {
     const bird = new Sucker()
     bird.create(particles)
   }
 
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < 9; i++) {
     const bird = new Cheater()
     bird.create(particles)
   }
 
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < 9; i++) {
     const bird = new Grudger()
     bird.create(particles)
   }
