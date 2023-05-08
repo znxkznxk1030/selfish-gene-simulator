@@ -2,6 +2,12 @@
 
 ![figure-001](./figures/figure-001.gif)
 
+## RUN
+
+1. VSCode에서 reciprocal-altruism.js를 연다.
+2. VSCode 플러그인 [canvas dojo](https://github.com/znxkznxk1030/canvas-dojo)를 설치한다.
+3. Cmd + Shift + P > "Canvas Preview"를 연다.
+
 ## 규칙
 
 1. 새는 태어날 때 생명력이 100으로 시작한다.
